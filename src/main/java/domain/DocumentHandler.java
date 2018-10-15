@@ -86,7 +86,7 @@ public class DocumentHandler {
         while (sc.hasNext()) {
             String w = sc.next();
             if (!w.matches("\\s*")) {
-                String partialResult = w.replace("[^a-zA-Z] ", "").replace(".", "").toLowerCase();
+                String partialResult = w.replaceAll("[^a-zA-Z]", "").toLowerCase();
                 String stopWordResult = removeStopWords(partialResult);
                 String stemWordResult;
                 if (!stopWordResult.equals("")){

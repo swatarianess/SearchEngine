@@ -10,6 +10,7 @@ import java.util.*;
 public class Indexer {
 
     //Maybe use a pair for storing data?
+    private HashMap<String, HashSet<String>> invertedIndex = new HashMap<>();
 
     public double tf(List<String> doc, String term) {
         double result = 0;
@@ -39,11 +40,32 @@ public class Indexer {
         return tf(doc, term) * idf(docs, term);
     }
 
-    public HashMap<String, HashSet<String>> generateInvertedIndex() {
-        HashMap<String, HashSet<String>> invertedIndex = new HashMap<>();
+    public void generateInvertedIndex(HashMap<String,List<String>> documentWordList){
+//        addToInvertedIndex("Document_1", documentWordList.get("Document_1"));
 
+        documentWordList.forEach(this::addToInvertedIndex);
 
+        System.out.println("InvertedIndex size: " + invertedIndex.keySet().size());
+        System.out.println("InvertedIndex: " + invertedIndex);
+        System.out.println("InvertedIndex keys: " + invertedIndex.keySet().toString());
+    }
 
+    /**
+     *  Takes words and adds them to the invertedIndex
+     */
+    private void addToInvertedIndex(String documentName, List<String> strings){
+        for (String keyword : strings){
+            if(invertedIndex.containsKey(keyword)){
+                invertedIndex.get(keyword).add(documentName);
+            }else {
+                HashSet<String> documentList = new HashSet<>();
+                documentList.add(documentName);
+                invertedIndex.put(keyword, documentList);
+            }
+        }
+    }
+
+    public HashMap<String, HashSet<String>> getInvertedIndex() {
         return invertedIndex;
     }
 
@@ -60,6 +82,10 @@ public class Indexer {
         System.out.println("tdif('I') : " + indexer.tdIdf(doc1, allDocs, "I"));
         System.out.println("tdif('and') : " + indexer.tdIdf(doc1, allDocs, "and"));
         System.out.println("tdif('no') : " + indexer.tdIdf(doc4, allDocs, "no"));
+
+        System.out.println();
+
+        System.out.println("InvertedIndex size: " + indexer.invertedIndex.size());
 
     }
 }

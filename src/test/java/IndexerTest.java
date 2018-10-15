@@ -70,7 +70,17 @@ class IndexerTest {
 
         System.out.printf("her: %s\n", herDoc);
         System.out.printf("she: %s\n", sheDoc);
-        System.out.printf("castle: %s\n", himDoc);
+        System.out.printf("him: %s\n", himDoc);
+    }
+
+    @Test
+    void generateIndex(){
+        indexer.generateInvertedIndex(dh.getDocumentList());
+    }
+
+    @Test
+    void addToInvertedIndex(){
+        indexer.generateInvertedIndex(dh.getDocumentList());
     }
 
 }
