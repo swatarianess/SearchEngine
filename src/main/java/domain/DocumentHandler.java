@@ -1,5 +1,7 @@
 package domain;
 
+import indexer.Indexer;
+import model.Document;
 import org.apache.lucene.analysis.CharArraySet;
 import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.tartarus.snowball.ext.EnglishStemmer;
@@ -19,40 +21,65 @@ import java.util.stream.Stream;
 
 public class DocumentHandler {
 
-    private HashMap<String, List<String>> documentList = new HashMap<>();
-    private final String DEFAULT_FOLDER_DIRECTORY = "./resources/data/Random/";
-    private String defaultFilePrefix = "Document_";
-
-    public String getDefaultFilePrefix() {
-        return defaultFilePrefix;
+    private ArrayList<Document> properDocumentList = new ArrayList<>();
+    private Indexer indexer = new Indexer();
+    private String defaultFolderDirectory = "./resources/data/Random/";
+    public ArrayList<Document> getProperDocumentList() {
+        return properDocumentList;
     }
 
-    public void setDefaultFilePrefix(String defaultFilePrefix) {
-        this.defaultFilePrefix = defaultFilePrefix;
+    /**
+     * Adds a single document file
+     *
+     * @param documentFile The file to add to the document list
+     */
+    public void addDocument(File documentFile) {
+        addDocument("", documentFile);
     }
 
-    public HashMap<String, List<String>> getDocumentList() {
-        return documentList;
-    }
-
-    public void addDocument(String documentName, ArrayList<String> documentWordList) {
-        documentList.put(documentName, documentWordList);
-    }
-
+    /**
+     * Adds a document and adds prefix to document name
+     *
+     * @param documentName The reference name to the document
+     * @param documentFile The file of the document
+     */
     public void addDocument(String documentName, File documentFile) {
-        String documentPrefix = documentName.equalsIgnoreCase("") ? documentFile.getName(): documentName + (documentList.size() + 1);
-
+        String documentPrefix = documentName.equalsIgnoreCase("") ? documentFile.getName(): documentName + (properDocumentList.size() + 1);
         try {
-            documentList.put(documentPrefix, parseFile(documentFile));
+            Document tempDocument = new Document(documentPrefix, documentFile, parseFile(documentFile));
+            HashMap<String,Number> tfHashMap = new HashMap<>();
+            tempDocument.getDocumentWords().stream().distinct().forEach(s -> tfHashMap.put(s,indexer.tf(tempDocument.getDocumentWords(),s)));
+            tempDocument.setDocumentTermFrequencies(tfHashMap);
+            properDocumentList.add(tempDocument);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
     }
 
-    public void addDocument(String documentPrefix, String folderDirectory) throws IOException {
-        getFolderFiles(folderDirectory).forEach(f -> addDocument(documentPrefix, f));
+    /**
+     *  Adds all documents from a folder directory
+     * @param folderDirectory The folder directory to find files
+     * @throws IOException Thrown if an exception is found
+     */
+    public void addDocument(String folderDirectory) throws IOException {
+        getFolderFiles(folderDirectory).forEach(this::addDocument);
     }
 
+    /**
+     * @param documentPrefix The prefix to add to the document name
+     * @param folderDirectory The folder directory to find files
+     * @throws IOException Thrown if an exception is found
+     */
+    public void addDocument(String documentPrefix, String folderDirectory) throws IOException {
+        getFolderFiles(folderDirectory).forEach(file -> addDocument(documentPrefix,file));
+    }
+
+    /**
+     * Stems a string
+     *
+     * @param input The word to stem
+     * @return Returns a stemmed word
+     */
     public String stemWord(String input){
         EnglishStemmer englishStemmer = new EnglishStemmer();
         String inputParsed = input.toLowerCase();
@@ -62,24 +89,36 @@ public class DocumentHandler {
         return englishStemmer.getCurrent();
     }
 
-    public static String removeStopWords(String textFile) {
+    /**
+     * Removes string if it is a stopword
+     *
+     * @param textFile The word to check against
+     * @return Returns the string if it is not a stop-word, otherwise an empty string.
+     */
+    public String removeStopWords(String textFile) {
         EnglishAnalyzer sa = new EnglishAnalyzer();
         CharArraySet charArraySet = sa.getStopwordSet();
         String input = textFile.toLowerCase();
         return charArraySet.contains(input) ? "" : input;
     }
 
+    /**
+     * Removes a document form the document list
+     * @param documentName The name of the document to remove
+     */
     public void removeDocument(String documentName) {
-        documentList.remove(documentName);
+        properDocumentList.removeIf(document -> document.getDocumentName().equals(documentName));
     }
 
     /**
+     * Extracts words from a document into a list of words
+     *
      * @param documentFile File to parse
      * @return Returns an @ArrayList of words from the file.
      * @throws FileNotFoundException Thrown when file not found
      */
     private List<String> parseFile(File documentFile) throws FileNotFoundException {
-        ArrayList<String> result = new ArrayList<>();
+        List<String> result = new ArrayList<>();
         Scanner sc = new Scanner(documentFile);
         sc.useDelimiter(" +|\\s");
 
@@ -100,14 +139,15 @@ public class DocumentHandler {
     }
 
     /**
+     * Gets all the files in a folder
+     *
      * @param folderPath The path to read files from
      * @return Returns a list of files to read
      * @throws IOException Thrown if folderPath is incorrect
      */
     public List<File> getFolderFiles(String folderPath) throws IOException {
         List<File> result;
-
-        String fileFolder = Paths.get(folderPath).toFile().exists() ? folderPath : DEFAULT_FOLDER_DIRECTORY;
+        String fileFolder = Paths.get(folderPath).toFile().exists() ? folderPath : defaultFolderDirectory;
 
         try (Stream<Path> paths = Files.walk(Paths.get(fileFolder))) {
             result = paths.filter(Files::isRegularFile).map(Path::toFile).collect(Collectors.toList());
@@ -115,4 +155,11 @@ public class DocumentHandler {
         return result;
     }
 
+    public String getDefaultFolderDirectory() {
+        return defaultFolderDirectory;
+    }
+
+    public void setDefaultFolderDirectory(String defaultFolderDirectory) {
+        this.defaultFolderDirectory = defaultFolderDirectory;
+    }
 }

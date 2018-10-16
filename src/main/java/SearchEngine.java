@@ -11,7 +11,7 @@ public class SearchEngine {
     public static void main(String[] args) throws IOException {
         SearchEngine se = new SearchEngine();
         Indexer indexer = new Indexer();
-//        IRModel irModel = new IRModel(new String[]{}, new HashMap<>());
+        DocumentHandler documentHandler = new DocumentHandler();
 
     }
 }
