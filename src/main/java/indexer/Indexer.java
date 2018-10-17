@@ -10,7 +10,7 @@ import java.util.*;
 public class Indexer {
 
     //Maybe use a pair for storing data?
-    private HashMap<String, List<String>> invertedIndex = new HashMap<>();
+    private HashMap<String, HashSet<String>> invertedIndex = new HashMap<>();
 
     /**
      * @param doc A list of words in a document
@@ -25,7 +25,7 @@ public class Indexer {
                 result++;
         }
 
-        return result / doc.size();
+        return result ;// / doc.size();
     }
 
     /**
@@ -43,7 +43,7 @@ public class Indexer {
                 }
             }
         }
-        return Math.log(docWordList.size() / n);
+        return Math.log((double) docWordList.size() / (double) n);
     }
 
     public double tdIdf(List<String> doc, Collection<List<String>> docs, String term) {
@@ -51,25 +51,29 @@ public class Indexer {
     }
 
     public void generateInvertedIndex(HashMap<String,List<String>> documentWordList){
-        documentWordList.forEach(this::addToInvertedIndex);
+        for (Map.Entry<String, List<String>> entry : documentWordList.entrySet()) {
+            String key = entry.getKey();
+            HashSet<String> value = new HashSet<>(entry.getValue());
+            addToInvertedIndex(key, value);
+        }
     }
 
     /**
      *  Takes words and adds them to the invertedIndex
      */
-    private void addToInvertedIndex(String documentName, List<String> strings){
+    private void addToInvertedIndex(String documentName, HashSet<String> strings){
         for (String keyword : strings){
             if(invertedIndex.containsKey(keyword)){
                 invertedIndex.get(keyword).add(documentName);
             }else {
-                List<String> documentList = new ArrayList<>();
+                HashSet<String> documentList = new HashSet<>();
                 documentList.add(documentName);
                 invertedIndex.put(keyword, documentList);
             }
         }
     }
 
-    public HashMap<String, List<String>> getInvertedIndex() {
+    public HashMap<String, HashSet<String>> getInvertedIndex() {
         return invertedIndex;
     }
 

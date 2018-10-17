@@ -82,11 +82,10 @@ public class Document {
 
     @Override
     public String toString() {
-        return "Document{" +
-                "\n documentName='" + documentName + '\'' +
-                "\n documentFile=" + documentFile +
-                "\n documentWords=" + documentWords +
-                "\n documentTermFrequencies=" + documentTermFrequencies +
-                "\n}";
+        return  "DocumentName: " + documentName;
+//                "\n documentFile=" + documentFile +
+//                "\n documentWords=" + documentWords +
+//                "\n documentTermFrequencies=" + documentTermFrequencies +
+//                "\n}";
     }
 }
