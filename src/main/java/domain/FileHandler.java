@@ -16,7 +16,7 @@ public class FileHandler {
     public static boolean invertedIndexExists(String fileDir){
         return loadInvertedIndex(fileDir) != null;
     }
-
+    public static String defaultFileDir = "./data/index/invertedIndex.json";
     /**
      * @param fileDir File directory
      * @return Returns the InvertedIndex

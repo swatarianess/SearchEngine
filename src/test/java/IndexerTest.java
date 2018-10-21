@@ -13,24 +13,27 @@ class IndexerTest {
 
     private DocumentHandler dh = new DocumentHandler();
     private Indexer indexer = dh.getIndexer();
+    private String term = "wuther";
 
     @BeforeEach
     @DisplayName("Reinitialize documentHandler")
     void setUp() throws IOException {
         //Initialize stuff
         System.out.println("@BeforeAll - Executes once before all test methods");
-        dh.addDocument("./data/Test/");
+        dh.addDocument("./data/Book/");
+        System.out.println("Initializing done.");
     }
 
     @AfterEach
     @DisplayName("Save inverted index!")
     void setDown(){
+        if (!FileHandler.invertedIndexExists(FileHandler.defaultFileDir))
         FileHandler.saveInvertedIndexFile(indexer.getInvertedIndex());
     }
 
     @Test
-    void tf() {
-        String term = "i";
+    @Description("Term frequency of a term")
+    void tfTest() {
         double[] results = new double[dh.getDocuments().size()];
         List<Document> documents = dh.getDocuments();
         for (int i = 0; i < documents.size(); i++) {
@@ -38,12 +41,25 @@ class IndexerTest {
             results[i] = indexer.tf(d.getDocumentWords(), term);
         }
         System.out.println("Term frequency of '" + term + "': " + Arrays.toString(results));
-        Assertions.assertEquals(results[0], 7.0);
+    }
+
+    @Test
+    @Description("Term count of a term in a document")
+    void tfCountTest() {
+        double[] results = new double[dh.getDocuments().size()];
+        double[] results2 = new double[dh.getDocuments().size()];
+        List<Document> documents = dh.getDocuments();
+        for (int i = 0; i < documents.size(); i++) {
+            Document d = documents.get(i);
+            results[i] = 1 + Math.log10(indexer.tfCount(d.getDocumentWords(), term));
+            results2[i] = (indexer.tfCount(d.getDocumentWords(), term));
+        }
+        System.out.println("Term frequency of '" + term + "': " + Arrays.toString(results));
+        System.out.println("Term frequency of '" + term + "': " + Arrays.toString(results2));
     }
 
     @Test
     void idf() {
-        String term = "game";
         Collection<List<String>> collectionOfDocuments = new ArrayList<>();
         dh.getDocuments().forEach(document -> collectionOfDocuments.add(document.getDocumentWords()));
         double idfOfHad = dh.getIndexer().idf(collectionOfDocuments,term);
@@ -52,8 +68,6 @@ class IndexerTest {
 
     @Test
     void tfidf() {
-        String term = "life";
-
         Collection<List<String>> collectionOfDocuments = new ArrayList<>();
         dh.getDocuments().forEach(document -> collectionOfDocuments.add(document.getDocumentWords()));
         HashMap<String, Pair<String,Number>> idfMap = new HashMap<>();
@@ -89,17 +103,43 @@ class IndexerTest {
     @Test
     @Description("Get weight of term in a document")
     void getTermWeight() {
-        String term = "this";
         float[] termWeights = new float[dh.getDocuments().size()];
 
         List<Document> documents = dh.getDocuments();
         for (int i = 0; i < documents.size(); i++) {
             Document d = documents.get(i);
-            termWeights[i] = (float) dh.getIndexer().termWeight(term, d, dh.getDocuments().size());
+            termWeights[i] = (float) dh.getIndexer().termWeightDocument(term, d, dh.getDocuments().size());
         }
 
         System.out.println("dh = " + dh.getDocuments());
         System.out.println("termWeights = " + Arrays.toString(termWeights));
     }
 
+
+    @Test
+    void scoreTest() {
+        String[] query = "affection ".split("\\s+");
+        String[] parsedQuery = new String[query.length];
+        ArrayList<Double> resultList = new ArrayList<>();
+        Map<String,Double> resultMap = new HashMap<>();
+
+        for (int i = 0; i < query.length; i++) {
+            String s = query[i].toLowerCase();
+            String temp = dh.stemWord(s);
+            String temp2 = dh.removeStopWords(temp);
+
+            if (!temp2.equals("")) parsedQuery[i] = temp2;
+        }
+
+        for (Document d : dh.getDocuments()){
+            double score = indexer.scoreQueryDocument(Arrays.asList(parsedQuery),d);
+
+            if (score > 0) resultMap.put(d.getDocumentName(),score);
+
+        }
+
+        System.out.println("dh.getDocuments() = " + dh.getDocuments());
+        resultMap.entrySet().stream().sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).forEach(System.out::println);
+
+    }
 }

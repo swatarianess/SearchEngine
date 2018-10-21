@@ -29,6 +29,15 @@ public class Indexer {
             if (term.equalsIgnoreCase(word))
                 result++;
         }
+        return result / doc.size();
+    }
+
+    public double tfCount(List<String> doc, String term) {
+        double result = 0;
+        for (String word : doc) {
+            if (term.equalsIgnoreCase(word))
+                result++;
+        }
         return result;
     }
 
@@ -47,7 +56,7 @@ public class Indexer {
                 }
             }
         }
-        return count > 0 ? (1 + Math.log(docWordList.size() / count)) : 1.0;
+        return count > 0 ? (Math.log10(docWordList.size() / count)) : 0;
     }
 
     public double tfIdf(List<String> doc, Collection<List<String>> wordsInCorpus, String term) {
@@ -82,21 +91,32 @@ public class Indexer {
         return invertedIndex;
     }
 
-    public double termWeight(Double termFrequency, Double documentFrequency, int totalDocuments) {
-        return (1 + Math.log(termFrequency)) * Math.log(totalDocuments / documentFrequency);
+    public double termWeightDocument(Double termFrequency, Double documentFrequency, int totalDocuments) {
+        return (1 + Math.log10(termFrequency)) * Math.log10(totalDocuments / documentFrequency);
     }
 
-    public double termWeight(String term, Document d, int totalDocuments) {
+    public double termWeightDocument(String term, Document d, int totalDocuments) {
         if (d.getDocumentTermFrequencies().get(term) != null) {
-            return (1 + Math.log(d.getDocumentTermFrequencies().get(term).doubleValue()) * Math.log(totalDocuments / invertedIndex.get(term).size()));
+            return (1 + Math.log10(d.getDocumentTermFrequencies().get(term).doubleValue()) * Math.log10((double) totalDocuments / invertedIndex.get(term).size()));
         } else {
             return 0;
         }
     }
 
-    public double scoreQueryDocument(List<String> query, Document d) {
+//    public double termWeightQuery(String[] queryTerms, )
 
-        return 0d;
+    public double cosineScore(String[] query){
+        return 0.0d;
+    }
+
+    public double scoreQueryDocument(List<String> query, Document d) {
+        double score = 0d;
+            for (String s : query){
+                if (d.getDocumentWords().contains(s)){
+                    score += tf(d.getDocumentWords(),s) * invertedIndex.get(s).size();
+                }
+            }
+        return score;
     }
 
 }
