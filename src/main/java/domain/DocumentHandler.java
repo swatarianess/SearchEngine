@@ -20,6 +20,7 @@ public class DocumentHandler {
 
     private Indexer indexer = new Indexer();
     private List<Document> documents = new ArrayList<>();
+    private List<String> wordsInCorpus = new ArrayList<>();
     private String defaultFolderDirectory = "./resources/data/Stories/";
 
 
@@ -30,7 +31,10 @@ public class DocumentHandler {
      */
     public void addDocument(File documentFile) {
         addDocument("", documentFile);
-        documents.forEach(document -> indexer.generateInvertedIndex(Collections.singletonMap(document.getDocumentName(),document.getDocumentWords())));
+        documents.forEach(document -> {
+            indexer.generateInvertedIndex(Collections.singletonMap(document.getDocumentName(),document.getDocumentWords()));
+            wordsInCorpus.addAll(document.getDocumentWords());
+        });
     }
 
     /**
@@ -167,5 +171,7 @@ public class DocumentHandler {
     public void setDefaultFolderDirectory(String defaultFolderDirectory) {
         this.defaultFolderDirectory = defaultFolderDirectory;
     }
+
+
 
 }

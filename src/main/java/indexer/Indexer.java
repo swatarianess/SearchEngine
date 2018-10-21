@@ -13,7 +13,8 @@ import java.util.*;
 public class Indexer {
 
     //Maybe use a pair for storing data?
-    private Map<String, HashSet<String>> invertedIndex = new TreeMap<>();
+    private static Map<String, HashSet<String>> invertedIndex = new TreeMap<>();
+    private static Map<String, Number> idfMap = new TreeMap<>();
 
     /**
      * Number of occurrences of a term in a document
@@ -28,8 +29,8 @@ public class Indexer {
             if (term.equalsIgnoreCase(word))
                 result++;
         }
-//        return 1 + Math.log(result);
         return result;
+//        return result / doc.size();
     }
 
     /**
@@ -47,13 +48,12 @@ public class Indexer {
                 }
             }
         }
-
-//        return count > 0 ? Math.log(docWordList.size() /  count) : 0;
-        return Math.log(docWordList.size() / count);
+        System.out.println("Document count: " + count);
+        return count > 0 ? (Math.log(docWordList.size() / count)) : 1;
     }
 
-    public double tdIdf(List<String> doc, Collection<List<String>> docs, String term) {
-        return (tf(doc, term) * idf(docs, term));
+    public double tfIdf(List<String> doc, Collection<List<String>> wordsInCorpus, String term) {
+        return (tf(doc, term) * idf(wordsInCorpus, term));
     }
 
     public void generateInvertedIndex(Map<String, List<String>> documentWordList) {
@@ -63,6 +63,7 @@ public class Indexer {
             addToInvertedIndex(key, value);
         }
     }
+
 
     /**
      * Takes words and adds them to the invertedIndex
@@ -83,52 +84,20 @@ public class Indexer {
         return invertedIndex;
     }
 
-    /**
-     * Method to calculate cosine similarity between two documents.
-     *
-     * @param queryVector1 : document vector 1 (a)
-     * @param docVector2   : document vector 2 (b)
-     * @return Returns cosine similarity score between two documents
-     */
-    public double cosineSimilarity(List<Double> queryVector1, List<Double> docVector2) {
-        double dotProduct = 0.0;
-        double magnitude1 = 0.0;
-        double magnitude2 = 0.0;
-        double cosineSimilarity;
-
-        for (int i = 0; i < queryVector1.size(); i++) //docVector1 and docVector2 must be of same length
-        {
-            dotProduct += queryVector1.get(i) * docVector2.get(i);  //a.b
-            magnitude1 += Math.pow(queryVector1.get(i), 2);  //(a^2)
-            magnitude2 += Math.pow(docVector2.get(i), 2); //(b^2)
-        }
-
-        magnitude1 = Math.sqrt(magnitude1);//sqrt(a^2)
-        magnitude2 = Math.sqrt(magnitude2);//sqrt(b^2)
-
-        if (magnitude1 != 0.0 | magnitude2 != 0.0) {
-            cosineSimilarity = dotProduct / (magnitude1 * magnitude2);
-        } else {
-            return 0.0;
-        }
-        return cosineSimilarity;
-    }
-
-    public double documentCosineSimilarity(List<String> query, List<Document> relevantDocuments) {
-        return 0d;
-    }
-
     public double termWeight(Double termFrequency, Double documentFrequency, int totalDocuments) {
         return (1 + Math.log(termFrequency)) * Math.log(totalDocuments / documentFrequency);
     }
 
     public double termWeight(String term, Document d, int totalDocuments) {
-//        return (1 + Math.log(d.getDocumentTermFrequencies().get(term).doubleValue()) * Math.log(totalDocuments/ (double) d.getDocumentTermFrequencies().get(term)));
         return (1 + Math.log(d.getDocumentTermFrequencies().get(term).doubleValue()) * Math.log((float) (totalDocuments / invertedIndex.get(term).size())));
     }
 
     public double scoreQueryDocument(List<String> query, Document d) {
-        return 0.0d;
+
+
+
+
+        return 0d;
     }
 
 }

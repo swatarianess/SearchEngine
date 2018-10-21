@@ -38,10 +38,10 @@ class IndexerTest {
 
     @Test
     void idf() {
-        String term = "udfsanhf";
+        String term = "sign";
         Collection<List<String>> collectionOfDocuments = new ArrayList<>();
         dh.getDocuments().forEach(document -> collectionOfDocuments.add(document.getDocumentWords()));
-        double idfOfHad = indexer.idf(collectionOfDocuments,term);
+        double idfOfHad = dh.getIndexer().idf(collectionOfDocuments,term);
         System.out.printf("idf of '%s': %s ", term,  idfOfHad);
     }
 
