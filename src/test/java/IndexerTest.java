@@ -25,7 +25,7 @@ class IndexerTest {
 
     @Test
     void tf() {
-        String term = "kill";
+        String term = "i";
         double[] results = new double[dh.getDocuments().size()];
         List<Document> documents = dh.getDocuments();
         for (int i = 0; i < documents.size(); i++) {
@@ -42,7 +42,7 @@ class IndexerTest {
         Collection<List<String>> collectionOfDocuments = new ArrayList<>();
         dh.getDocuments().forEach(document -> collectionOfDocuments.add(document.getDocumentWords()));
         double idfOfHad = dh.getIndexer().idf(collectionOfDocuments,term);
-        System.out.printf("idf of '%s': %s ", term,  idfOfHad);
+        System.out.printf("idf of '%s': %s \n", term,  idfOfHad);
     }
 
     @Test
@@ -76,7 +76,17 @@ class IndexerTest {
     @Test
     @Description("Get weight of term in a document")
     void getTermWeight() {
+        String term = "affection";
+        float[] termWeights = new float[dh.getDocuments().size()];
 
+        List<Document> documents = dh.getDocuments();
+        for (int i = 0; i < documents.size(); i++) {
+            Document d = documents.get(i);
+            termWeights[i] = (float) dh.getIndexer().termWeight(term, d, dh.getDocuments().size());
+        }
+
+        System.out.println("dh = " + dh.getDocuments());
+        System.out.println("termWeights = " + Arrays.toString(termWeights));
     }
 
 }

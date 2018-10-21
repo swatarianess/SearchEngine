@@ -89,7 +89,11 @@ public class Indexer {
     }
 
     public double termWeight(String term, Document d, int totalDocuments) {
-        return (1 + Math.log(d.getDocumentTermFrequencies().get(term).doubleValue()) * Math.log((float) (totalDocuments / invertedIndex.get(term).size())));
+        if (d.getDocumentTermFrequencies().get(term) != null) {
+            return (1 + Math.log(d.getDocumentTermFrequencies().get(term).doubleValue()) * Math.log((float) (totalDocuments / invertedIndex.get(term).size())));
+        } else {
+            return 0;
+        }
     }
 
     public double scoreQueryDocument(List<String> query, Document d) {
