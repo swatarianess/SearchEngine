@@ -172,6 +172,7 @@ public class DocumentHandler {
         this.defaultFolderDirectory = defaultFolderDirectory;
     }
 
-
-
+    public List<String> getWordsInCorpus() {
+        return wordsInCorpus;
+    }
 }

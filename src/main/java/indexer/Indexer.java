@@ -30,7 +30,6 @@ public class Indexer {
                 result++;
         }
         return result;
-//        return result / doc.size();
     }
 
     /**
@@ -48,8 +47,7 @@ public class Indexer {
                 }
             }
         }
-        System.out.println("Document count: " + count);
-        return count > 0 ? (Math.log(docWordList.size() / count)) : 1;
+        return count > 0 ? (1 + Math.log(docWordList.size() / count)) : 1.0;
     }
 
     public double tfIdf(List<String> doc, Collection<List<String>> wordsInCorpus, String term) {
@@ -90,16 +88,13 @@ public class Indexer {
 
     public double termWeight(String term, Document d, int totalDocuments) {
         if (d.getDocumentTermFrequencies().get(term) != null) {
-            return (1 + Math.log(d.getDocumentTermFrequencies().get(term).doubleValue()) * Math.log((float) (totalDocuments / invertedIndex.get(term).size())));
+            return (1 + Math.log(d.getDocumentTermFrequencies().get(term).doubleValue()) * Math.log(totalDocuments / invertedIndex.get(term).size()));
         } else {
             return 0;
         }
     }
 
     public double scoreQueryDocument(List<String> query, Document d) {
-
-
-
 
         return 0d;
     }
