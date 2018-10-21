@@ -20,8 +20,8 @@ public class DocumentHandlerTest {
     @DisplayName("Reinitialize documentHandler")
     void setUp() {
         System.out.println("\n@BeforeAll - Clearing loaded documents ");
-        if (dh.getProperDocumentList().size() > 0) {
-            dh.getProperDocumentList().clear();
+        if (dh.getDocuments().size() > 0) {
+            dh.getDocuments().clear();
         }
     }
 
@@ -29,15 +29,15 @@ public class DocumentHandlerTest {
     @DisplayName("Parse file into a string array of words")
     void parseFileTest() throws IOException {
         dh.addDocument("example_", "./data/Random/");
-        assertEquals(4, dh.getProperDocumentList().size());
-        System.out.println("dh.getDocumentList().values().toString() = " + dh.getProperDocumentList().stream().map(Document::getDocumentWords).flatMap(Collection::stream).collect(Collectors.toList()));
+        assertEquals(4, dh.getDocuments().size());
+        System.out.println("dh.getDocumentList().values().toString() = " + dh.getDocuments().stream().map(Document::getDocumentWords).flatMap(Collection::stream).collect(Collectors.toList()));
     }
 
     @Test
     @DisplayName("Loading all files in a directory")
     void loadAllFilesTest() throws IOException {
         dh.addDocument("document_", "./data/Random/");
-        int fFiles = dh.getProperDocumentList().size();
+        int fFiles = dh.getDocuments().size();
         System.out.println("FileCount: " + fFiles);
         assertEquals(4, fFiles);
     }
@@ -66,29 +66,29 @@ public class DocumentHandlerTest {
         long endTime = System.currentTimeMillis();
 
         System.out.println("Directory: ./data/Random/");
-        System.out.println("FileCount: " + dh.getProperDocumentList().size());
+        System.out.println("FileCount: " + dh.getDocuments().size());
         System.out.printf("TimeTaken: %dms\n", (endTime-startTime));
         System.out.println();
 
-        //2 files in stories
+        //24 files in stories
         startTime = System.currentTimeMillis();
         dh.addDocument("./data/Stories/");
         endTime = System.currentTimeMillis();
         System.out.println("Directory: ./data/Stories/");
-        System.out.println("Document Names: " + dh.getProperDocumentList().stream().map(Document::getDocumentName).collect(Collectors.toSet()));
-        System.out.println("FileCount: " + dh.getProperDocumentList().size());
+        System.out.println("Document Names: " + dh.getDocuments().stream().map(Document::getDocumentName).collect(Collectors.toSet()));
+        System.out.println("FileCount: " + dh.getDocuments().size());
 
         System.out.printf("TimeTaken: %dms\n", (endTime-startTime));
 
 
-        assertEquals(22, dh.getProperDocumentList().size());
+        assertEquals(24, dh.getDocuments().size());
     }
 
     @Test
-    @DisplayName("Document test")
+    @DisplayName("Document test (first loaded document)")
     void documentDetailsTest() throws IOException {
         dh.addDocument("./data/Stories/");
-        System.out.println(dh.getProperDocumentList().get(0).toString());
-        System.out.println("dh.getProperDocumentList().get(0).getDocumentWords() = " + dh.getProperDocumentList().get(0).getDocumentWords());
+        System.out.println(dh.getDocuments().get(0).toString());
+        System.out.println("dh.getDocuments().get(0).getDocumentWords() = " + dh.getDocuments().get(0).getDocumentWords());
     }
 }

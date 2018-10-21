@@ -1,20 +1,42 @@
 package domain;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
 
 public class FileHandler {
-//
-//    public static File loadFile(){
-//
-//    }
 
-    public static void saveInvertedIndexFile(HashMap<String, HashSet<String>> invertedIndex){
+
+    public static boolean invertedIndexExists(String fileDir){
+        return loadInvertedIndex(fileDir) != null;
+    }
+
+    /**
+     * @param fileDir File directory
+     * @return Returns the InvertedIndex
+     */
+    public static Map<String, HashSet<String>> loadInvertedIndex(String fileDir){
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+        List<String> output;
+        StringBuilder result = new StringBuilder();
+        try {
+            output = Files.readAllLines(Paths.get(fileDir));
+        } catch (IOException e) {
+            return null;
+        }
+        output.forEach(result::append);
+        return gson.fromJson(result.toString(), TreeMap.class);
+    }
+
+
+    public static void saveInvertedIndexFile(Map<String, HashSet<String>> invertedIndex){
         Gson gson = new Gson();
         String jsonIndex = gson.toJson(invertedIndex);
         try {

@@ -82,10 +82,7 @@ public class Document {
 
     @Override
     public String toString() {
-        return  "DocumentName: " + documentName;
-//                "\n documentFile=" + documentFile +
-//                "\n documentWords=" + documentWords +
-//                "\n documentTermFrequencies=" + documentTermFrequencies +
-//                "\n}";
+        return  String.format("%s [%d]",documentName, documentWords.size());
+
     }
 }

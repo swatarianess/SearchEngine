@@ -12,21 +12,16 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class DocumentHandler {
 
-    private ArrayList<Document> properDocumentList = new ArrayList<>();
     private Indexer indexer = new Indexer();
-    private String defaultFolderDirectory = "./resources/data/Random/";
-    public ArrayList<Document> getProperDocumentList() {
-        return properDocumentList;
-    }
+    private List<Document> documents = new ArrayList<>();
+    private String defaultFolderDirectory = "./resources/data/Stories/";
+
 
     /**
      * Adds a single document file
@@ -35,6 +30,7 @@ public class DocumentHandler {
      */
     public void addDocument(File documentFile) {
         addDocument("", documentFile);
+        documents.forEach(document -> indexer.generateInvertedIndex(Collections.singletonMap(document.getDocumentName(),document.getDocumentWords())));
     }
 
     /**
@@ -44,13 +40,13 @@ public class DocumentHandler {
      * @param documentFile The file of the document
      */
     public void addDocument(String documentName, File documentFile) {
-        String documentPrefix = documentName.equalsIgnoreCase("") ? documentFile.getName(): documentName + (properDocumentList.size() + 1);
+        String documentPrefix = documentName.equalsIgnoreCase("") ? documentFile.getName(): documentName + (documents.size() + 1);
         try {
             Document tempDocument = new Document(documentPrefix, documentFile, parseFile(documentFile));
             HashMap<String,Number> tfHashMap = new HashMap<>();
             tempDocument.getDocumentWords().stream().distinct().forEach(s -> tfHashMap.put(s,indexer.tf(tempDocument.getDocumentWords(),s)));
             tempDocument.setDocumentTermFrequencies(tfHashMap);
-            properDocumentList.add(tempDocument);
+            documents.add(tempDocument);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -90,7 +86,7 @@ public class DocumentHandler {
     }
 
     /**
-     * Removes string if it is a stopword
+     * Removes string if it is a stop-word
      *
      * @param textFile The word to check against
      * @return Returns the string if it is not a stop-word, otherwise an empty string.
@@ -107,11 +103,11 @@ public class DocumentHandler {
      * @param documentName The name of the document to remove
      */
     public void removeDocument(String documentName) {
-        properDocumentList.removeIf(document -> document.getDocumentName().equals(documentName));
+        documents.removeIf(document -> document.getDocumentName().equals(documentName));
     }
 
     /**
-     * Extracts words from a document into a list of words
+     * Extracts words from a document, and returns a list of words
      *
      * @param documentFile File to parse
      * @return Returns an @ArrayList of words from the file.
@@ -155,6 +151,15 @@ public class DocumentHandler {
         return result;
     }
 
+    public Indexer getIndexer() {
+        return indexer;
+    }
+
+    public List<Document> getDocuments() {
+        return documents;
+    }
+
+
     public String getDefaultFolderDirectory() {
         return defaultFolderDirectory;
     }
@@ -162,4 +167,5 @@ public class DocumentHandler {
     public void setDefaultFolderDirectory(String defaultFolderDirectory) {
         this.defaultFolderDirectory = defaultFolderDirectory;
     }
+
 }

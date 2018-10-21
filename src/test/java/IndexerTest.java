@@ -1,12 +1,14 @@
+import com.sun.org.glassfish.gmbal.Description;
 import domain.DocumentHandler;
 import indexer.Indexer;
-import org.junit.Ignore;
+import model.Document;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.*;
 
 class IndexerTest {
 
@@ -18,74 +20,63 @@ class IndexerTest {
     void setUp() throws IOException {
         //Initialize stuff
         System.out.println("@BeforeAll - Executes once before all test methods");
-        dh.addDocument("Document_", "./data/Stories/");
+        dh.addDocument("./data/Stories/");
     }
 
-    @Ignore
+    @Test
     void tf() {
-//        double noDoc1 = indexer.tf(dh.getProperDocumentList().get("Document_1"), "no");
-//        double anDoc1 = indexer.tf(dh.getProperDocumentList().get("Document_1"), "and");
-//
-//        double noDoc2 = indexer.tf(dh.getProperDocumentList().get("Document_2"), "no");
-//        double anDoc2 = indexer.tf(dh.getProperDocumentList().get("Document_2"), "and");
-//
-//        double noDoc3 = indexer.tf(dh.getProperDocumentList().get("Document_3"), "no");
-//        double anDoc3 = indexer.tf(dh.getProperDocumentList().get("Document_3"), "and");
-//
-//        System.out.println("Term Frequencies");
-//
-//        System.out.println("Document 1");
-//        System.out.printf("\tno: %.3f%%\n", noDoc1*100);
-//        System.out.printf("\tand: %.3f%%\n", anDoc1*100);
-//
-//        System.out.println("Document 2");
-//        System.out.printf("\tno: %.3f%%\n", noDoc2*100);
-//        System.out.printf("\tand: %.3f%%\n", anDoc2*100);
-//
-//        System.out.println("Document 3");
-//        System.out.printf("\tno: %.3f%%\n", noDoc3*100);
-//        System.out.printf("\tand: %.3f%%\n", anDoc3*100);
-
+        String term = "kill";
+        double[] results = new double[dh.getDocuments().size()];
+        List<Document> documents = dh.getDocuments();
+        for (int i = 0; i < documents.size(); i++) {
+            Document d = documents.get(i);
+            results[i] = indexer.tf(d.getDocumentWords(), term);
+        }
+        System.out.println("Term frequency of '" + term + "': " + Arrays.toString(results));
+        Assertions.assertEquals(results[0], 7.0);
     }
 
     @Test
     void idf() {
-
-//        double noDoc = indexer.idf(dh.getDocumentList().values(), "her");
-//        double anDoc = indexer.idf(dh.getDocumentList().values(), "she");
-//        double isDoc = indexer.idf(dh.getDocumentList().values(), "them");
-//
-//        System.out.println("Inverse Document Frequencies");
-//
-//        System.out.printf("\tno: %f%%\n", noDoc);
-//        System.out.printf("\tand: %f%%\n", anDoc);
-//        System.out.printf("\tis: %f%%\n", isDoc);
-
+        String term = "udfsanhf";
+        Collection<List<String>> collectionOfDocuments = new ArrayList<>();
+        dh.getDocuments().forEach(document -> collectionOfDocuments.add(document.getDocumentWords()));
+        double idfOfHad = indexer.idf(collectionOfDocuments,term);
+        System.out.printf("idf of '%s': %s ", term,  idfOfHad);
     }
 
     @Test
     void tdIdf() {
 
-//        double herDoc = indexer.tdIdf(dh.getDocumentList().get("Document_6"),dh.getDocumentList().values(),"her");
-//        double sheDoc = indexer.tdIdf(dh.getDocumentList().get("Document_2"),dh.getDocumentList().values(),"she");
-//        double himDoc = indexer.tdIdf(dh.getDocumentList().get("Document_8"),dh.getDocumentList().values(),"him");
-//
-//        System.out.printf("her: %s\n", herDoc);
-//        System.out.printf("she: %s\n", sheDoc);
-//        System.out.printf("him: %s\n", himDoc);
+
     }
 
     @Test
-    void generateIndex(){
-        Assertions.assertEquals(0,indexer.getInvertedIndex().size());
-//        indexer.generateInvertedIndex(dh.getProperDocumentList());
-        Assertions.assertNotEquals(0,indexer.getInvertedIndex().size());
+    void generateIndex() {
+        Assertions.assertEquals(0, indexer.getInvertedIndex().size());
+
+        HashMap<String, List<String>> invertedHashmap = new HashMap<>();
+        dh.getDocuments().forEach(document -> invertedHashmap.put(document.getDocumentName(), document.getDocumentWords()));
+
+        indexer.generateInvertedIndex(invertedHashmap);
+        Assertions.assertNotEquals(0, indexer.getInvertedIndex().size());
+        System.out.println("invertedHashmap = " + indexer.getInvertedIndex());
+        System.out.println("Most common term: " + indexer.getInvertedIndex().entrySet().stream().max(Comparator.comparingInt(value -> value.getValue().size())).get().getKey());
     }
 
     @Test
-    void addToInvertedIndex(){
-//        indexer.generateInvertedIndex(dh.getDocumentList());
+    void addToInvertedIndex() {
+//        indexer.generateInvertedIndex(dh.getDocuments());
+        HashMap<String, List<String>> invertedHashmap = new HashMap<>();
+        dh.getDocuments().forEach(document -> invertedHashmap.put(document.getDocumentName(), document.getDocumentWords()));
+        indexer.generateInvertedIndex(invertedHashmap);
         System.out.println("indexer = " + indexer.getInvertedIndex());
+    }
+
+    @Test
+    @Description("Get weight of term in a document")
+    void getTermWeight() {
+
     }
 
 }
