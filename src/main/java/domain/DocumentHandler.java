@@ -48,7 +48,7 @@ public class DocumentHandler {
         try {
             Document tempDocument = new Document(documentPrefix, documentFile, parseFile(documentFile));
             HashMap<String,Number> tfHashMap = new HashMap<>();
-            tempDocument.getDocumentWords().stream().distinct().forEach(s -> tfHashMap.put(s,indexer.tf(tempDocument.getDocumentWords(),s)));
+            tempDocument.getDocumentWords().stream().distinct().forEach(s -> tfHashMap.put(s,indexer.logTermFrequency(tempDocument.getDocumentWords(),s)));
             tempDocument.setDocumentTermFrequencies(tfHashMap);
             documents.add(tempDocument);
         } catch (FileNotFoundException e) {
@@ -174,5 +174,45 @@ public class DocumentHandler {
 
     public List<String> getWordsInCorpus() {
         return wordsInCorpus;
+    }
+
+    public Collection<String> parseQuery(String[] query){
+        List<String> result = new ArrayList<>();
+        for (String s : query){
+            String temp1 = removeStopWords(s);
+            String temp2 = removeStopWords(s);
+            if (!temp2.equals(""))result.add(temp2);
+        }
+        return result;
+    }
+
+    public double computeCosineVector(Collection<String> query, Document document){
+        //q_i = tf-idf of term i in query
+        //d_i = tf-idf of term i in document
+        //|d_i| & |q_i| are
+
+        double productNumerator = 0;
+        double sumDenominatorQuery = 0;
+        double sumDenominatorDocument = 0;
+
+
+        for (String q_i : query){
+                double tfidfQuery, tfidfDocument;
+                //Calculate Numerator Product
+                tfidfQuery = indexer.tfIdf((List<String>) query, new ArrayList<String>(indexer.getInvertedIndex().keySet()), q_i); //Query
+                tfidfDocument = indexer.tfIdf(document.getDocumentWords(), Collections.singleton(wordsInCorpus),q_i); //Document
+
+                productNumerator += tfidfDocument * tfidfQuery;
+                sumDenominatorQuery += Math.pow(tfidfQuery,2);
+                sumDenominatorDocument += Math.pow(tfidfDocument,2);
+        }
+
+        double resultDenominatorQuery = Math.sqrt(sumDenominatorQuery);
+        double resultDenominatorDocument = Math.sqrt(sumDenominatorDocument);
+        double result =  productNumerator / (resultDenominatorDocument * resultDenominatorQuery);
+
+        System.out.printf("%s: q_i*d_i: %s, doniminatorDoc: %s, doniminatorQuery: %s, result: %s", document, productNumerator, sumDenominatorDocument, sumDenominatorQuery, result);
+
+        return result;
     }
 }

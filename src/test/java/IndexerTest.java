@@ -11,17 +11,21 @@ import java.util.*;
 
 class IndexerTest {
 
-    private DocumentHandler dh = new DocumentHandler();
-    private Indexer indexer = dh.getIndexer();
-    private String term = "wuther";
+    private static DocumentHandler dh = new DocumentHandler();
+    private static Indexer indexer = dh.getIndexer();
+    private static String term = "Pigs";
+    private static Collection<String> query = dh.parseQuery("little pigs".split("\\s+"));
 
-    @BeforeEach
+    @BeforeAll
     @DisplayName("Reinitialize documentHandler")
-    void setUp() throws IOException {
+    static void setUp() throws IOException {
         //Initialize stuff
-        System.out.println("@BeforeAll - Executes once before all test methods");
-        dh.addDocument("./data/Book/");
+        System.out.println("@BeforeAll - Adds all documents to index");
+        IndexerTest.dh.addDocument("./data/Stories/");
+
+        System.out.println("query = " + query);
         System.out.println("Initializing done.");
+        System.out.println();
     }
 
     @AfterEach
@@ -38,7 +42,7 @@ class IndexerTest {
         List<Document> documents = dh.getDocuments();
         for (int i = 0; i < documents.size(); i++) {
             Document d = documents.get(i);
-            results[i] = indexer.tf(d.getDocumentWords(), term);
+            results[i] = indexer.logTermFrequency(d.getDocumentWords(), term);
         }
         System.out.println("Term frequency of '" + term + "': " + Arrays.toString(results));
     }
@@ -81,8 +85,6 @@ class IndexerTest {
 
     @Test
     void generateIndex() {
-        Assertions.assertEquals(0, indexer.getInvertedIndex().size());
-
         HashMap<String, List<String>> invertedHashmap = new HashMap<>();
         dh.getDocuments().forEach(document -> invertedHashmap.put(document.getDocumentName(), document.getDocumentWords()));
 
@@ -118,28 +120,20 @@ class IndexerTest {
 
     @Test
     void scoreTest() {
-        String[] query = "affection ".split("\\s+");
-        String[] parsedQuery = new String[query.length];
         ArrayList<Double> resultList = new ArrayList<>();
         Map<String,Double> resultMap = new HashMap<>();
 
-        for (int i = 0; i < query.length; i++) {
-            String s = query[i].toLowerCase();
-            String temp = dh.stemWord(s);
-            String temp2 = dh.removeStopWords(temp);
-
-            if (!temp2.equals("")) parsedQuery[i] = temp2;
-        }
-
         for (Document d : dh.getDocuments()){
-            double score = indexer.scoreQueryDocument(Arrays.asList(parsedQuery),d);
-
+            double score = indexer.scoreQueryDocument((List<String>) query,d);
             if (score > 0) resultMap.put(d.getDocumentName(),score);
 
         }
-
         System.out.println("dh.getDocuments() = " + dh.getDocuments());
         resultMap.entrySet().stream().sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).forEach(System.out::println);
+    }
 
+    @Test
+    void computeCosinSimilarity() {
+        dh.getDocuments().forEach(d -> System.out.printf("%s: %s \n",d.getDocumentName(), dh.computeCosineVector(query,d)));
     }
 }
