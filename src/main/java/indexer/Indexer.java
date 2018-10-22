@@ -23,23 +23,7 @@ public class Indexer {
      * @param term The term to look for in the list of words
      * @return Returns the term frequency for the word
      */
-    public double logTermFrequency(List<String> doc, String term) {
-        double result = 0;
-        for (String word : doc) {
-            if (term.equalsIgnoreCase(word))
-                result++;
-        }
-        return Math.log10(result / doc.size());
-    }
-
-    /**
-     * Number of occurrences of a term in a document
-     *
-     * @param doc  A list of words in a document
-     * @param term The term to look for in the list of words
-     * @return Returns the term frequency for the word
-     */
-    public double termFrequency(List<String> doc, String term) {
+    public double tfCount(List<String> doc, String term) {
         double result = 0;
         for (String word : doc) {
             if (term.equalsIgnoreCase(word))
@@ -48,7 +32,7 @@ public class Indexer {
         return result / doc.size();
     }
 
-    public double tfCount(List<String> doc, String term) {
+    public double termFrequency(List<String> doc, String term) {
         double result = 0;
         for (String word : doc) {
             if (term.equalsIgnoreCase(word))
@@ -64,15 +48,11 @@ public class Indexer {
      */
     public double idf(Collection<List<String>> docWordList, String term) {
         double count = 0;
-        for (List<String> doc : docWordList) {
-            for (String word : doc) {
-                if (term.equalsIgnoreCase(word)) {
-                    count++;
-                    break;
-                }
-            }
+        for (List<String> doc : docWordList){
+            if (doc.contains(term)) count++;
         }
-        return count > 0 ? (Math.log10(docWordList.size() / count)) : 0;
+
+        return  docWordList.size() / count;
     }
 
     /**
@@ -89,15 +69,15 @@ public class Indexer {
     }
 
     public double tfIdf(List<String> doc, Collection<List<String>> wordsInCorpus, String term) {
-        return (logTermFrequency(doc, term) * idf(wordsInCorpus, term));
+        return (termFrequency(doc, term) * idf(wordsInCorpus, term));
     }
 
     public double tfIdf(List<String> doc, List<String> wordsInCorpus, String term) {
-        return (logTermFrequency(doc, term) * idf(Collections.singleton(wordsInCorpus), term));
+        return (termFrequency(doc, term) * idf(Collections.singleton(wordsInCorpus), term));
     }
 
     public double tfIdfQuery(List<String> wordList, List<String> wordsInCorpus, int corpusSize , String term) {
-        return (logTermFrequency(wordList, term) * idf(wordsInCorpus, corpusSize, term));
+        return (termFrequency(wordList, term) * idf(wordsInCorpus, corpusSize, term));
     }
 
     public void generateInvertedIndex(Map<String, List<String>> documentWordList) {
@@ -128,23 +108,19 @@ public class Indexer {
         return invertedIndex;
     }
 
-    public double termWeightDocument(Double termFrequency, Double documentFrequency, int totalDocuments) {
+    public double termWeightDocument(double termFrequency, int totalDocuments, double documentFrequency) {
         return (1 + Math.log10(termFrequency)) * Math.log10(totalDocuments / documentFrequency);
     }
 
-    public double termWeightDocument(String term, Document d, int totalDocuments) {
-        if (d.getDocumentTermFrequencies().get(term) != null) {
-            return (1 + Math.log10(d.getDocumentTermFrequencies().get(term).doubleValue()) * Math.log10((double) totalDocuments / invertedIndex.get(term).size()));
-        } else {
-            return 0;
-        }
-    }
+   public double termWeight(double termFrequency, double idfValue){
+        return (1 + Math.log10(termFrequency)) * Math.log10(idfValue);
+   }
 
     public double scoreQueryDocument(List<String> query, Document d) {
         double score = 0d;
             for (String s : query){
                 if (d.getDocumentWords().contains(s)){
-                    score += logTermFrequency(d.getDocumentWords(),s) * invertedIndex.get(s).size();
+                    score += termFrequency(d.getDocumentWords(),s) * Math.log10(invertedIndex.get(s).size());
                 }
             }
         return score;

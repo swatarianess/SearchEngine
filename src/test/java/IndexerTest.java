@@ -13,8 +13,8 @@ class IndexerTest {
 
     private static DocumentHandler dh = new DocumentHandler();
     private static Indexer indexer = dh.getIndexer();
-    private static String term = "Pigs";
-    private static Collection<String> query = dh.parseQuery("little pigs".split("\\s+"));
+    private static String term = "about";
+    private static Collection<String> query = Arrays.asList(dh.parseQuery("little pigs".split("\\s+")));
 
     @BeforeAll
     @DisplayName("Reinitialize documentHandler")
@@ -22,9 +22,6 @@ class IndexerTest {
         //Initialize stuff
         System.out.println("@BeforeAll - Adds all documents to index");
         IndexerTest.dh.addDocument("./data/Stories/");
-
-        System.out.println("query = " + query);
-        System.out.println("Initializing done.");
         System.out.println();
     }
 
@@ -42,7 +39,7 @@ class IndexerTest {
         List<Document> documents = dh.getDocuments();
         for (int i = 0; i < documents.size(); i++) {
             Document d = documents.get(i);
-            results[i] = indexer.logTermFrequency(d.getDocumentWords(), term);
+            results[i] = indexer.termFrequency(d.getDocumentWords(), term);
         }
         System.out.println("Term frequency of '" + term + "': " + Arrays.toString(results));
     }
@@ -67,6 +64,10 @@ class IndexerTest {
         Collection<List<String>> collectionOfDocuments = new ArrayList<>();
         dh.getDocuments().forEach(document -> collectionOfDocuments.add(document.getDocumentWords()));
         double idfOfHad = dh.getIndexer().idf(collectionOfDocuments,term);
+
+        double idfOfTerm = dh.getIndexer().getInvertedIndex().get(term).size();
+        System.out.println("Documents = " + dh.getDocuments().size());
+        System.out.println("idfOfTerm = " + idfOfTerm);
         System.out.printf("idf of '%s': %s \n", term,  idfOfHad);
     }
 
@@ -105,12 +106,14 @@ class IndexerTest {
     @Test
     @Description("Get weight of term in a document")
     void getTermWeight() {
+        Collection<List<String>> collectionOfDocuments = new ArrayList<>();
+        dh.getDocuments().forEach(document -> collectionOfDocuments.add(document.getDocumentWords()));
         float[] termWeights = new float[dh.getDocuments().size()];
 
         List<Document> documents = dh.getDocuments();
         for (int i = 0; i < documents.size(); i++) {
             Document d = documents.get(i);
-            termWeights[i] = (float) dh.getIndexer().termWeightDocument(term, d, dh.getDocuments().size());
+            termWeights[i] = (float) dh.getIndexer().termWeight(indexer.termFrequency(d.getDocumentWords(), term), indexer.idf(collectionOfDocuments, term));
         }
 
         System.out.println("dh = " + dh.getDocuments());
@@ -132,8 +135,4 @@ class IndexerTest {
         resultMap.entrySet().stream().sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).forEach(System.out::println);
     }
 
-    @Test
-    void computeCosinSimilarity() {
-        dh.getDocuments().forEach(d -> System.out.printf("%s: %s \n",d.getDocumentName(), dh.computeCosineVector(query,d)));
-    }
 }

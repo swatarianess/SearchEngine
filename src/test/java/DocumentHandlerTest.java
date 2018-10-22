@@ -1,6 +1,7 @@
-import model.Document;
 import domain.DocumentHandler;
-import org.junit.jupiter.api.BeforeEach;
+import model.Document;
+import org.junit.Ignore;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -14,18 +15,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Tag("Fast")
 public class DocumentHandlerTest {
 
-    private DocumentHandler dh = new DocumentHandler();
+    private static DocumentHandler dh = new DocumentHandler();
 
-    @BeforeEach
+    @BeforeAll
     @DisplayName("Reinitialize documentHandler")
-    void setUp() {
-        System.out.println("\n@BeforeAll - Clearing loaded documents ");
-        if (dh.getDocuments().size() > 0) {
-            dh.getDocuments().clear();
-        }
+    static void setUp() throws IOException {
+        System.out.println("@BeforeAll - Loading documents... ");
+        DocumentHandlerTest.dh.addDocument("./data/Stories/");
     }
 
-    @Test
+    @Ignore
     @DisplayName("Parse file into a string array of words")
     void parseFileTest() throws IOException {
         dh.addDocument("example_", "./data/Random/");
@@ -33,7 +32,7 @@ public class DocumentHandlerTest {
         System.out.println("dh.getDocumentList().values().toString() = " + dh.getDocuments().stream().map(Document::getDocumentWords).flatMap(Collection::stream).collect(Collectors.toList()));
     }
 
-    @Test
+    @Ignore
     @DisplayName("Loading all files in a directory")
     void loadAllFilesTest() throws IOException {
         dh.addDocument("document_", "./data/Random/");
@@ -42,7 +41,7 @@ public class DocumentHandlerTest {
         assertEquals(4, fFiles);
     }
 
-    @Test
+    @Ignore
     void stringPortStemmingTest() {
         String input = "Terrifying";
         String output = dh.stemWord(input);
@@ -51,13 +50,13 @@ public class DocumentHandlerTest {
         assertEquals(expected,output);
     }
 
-    @Test
+    @Ignore
     void removeStopWordsTest() {
        String handled = dh.removeStopWords("The quick brown fox jumped over the lazy dog and it was stuff and things.");
         System.out.println("handled = " + handled);
     }
 
-    @Test
+    @Ignore
     @DisplayName("Load all files in folder")
     void addFilesFromFolderTest() throws IOException {
         //4 files in Random
@@ -84,11 +83,17 @@ public class DocumentHandlerTest {
         assertEquals(24, dh.getDocuments().size());
     }
 
-    @Test
+    @Ignore
     @DisplayName("Document test (first loaded document)")
     void documentDetailsTest() throws IOException {
         dh.addDocument("./data/Stories/");
         System.out.println(dh.getDocuments().get(0).toString());
         System.out.println("dh.getDocuments().get(0).getDocumentWords() = " + dh.getDocuments().get(0).getDocumentWords());
+    }
+
+    @Test
+    void computeMatchingScoreTest() {
+        dh.getDocuments().forEach(document -> dh.computeMatchingScore(dh.parseQuery("fleas".split("\\s+")), document));
+
     }
 }
